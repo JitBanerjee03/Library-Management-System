@@ -1,9 +1,10 @@
 //This is file to integrate mongo db with node js using the mongoose library
 
 const mongoose=require('mongoose');
+require('dotenv').config();
 
-LOCAL_URL="mongodb://127.0.0.1:27017/Library"
-mongoose.connect(LOCAL_URL,{
+MONGO_LOCAL_URL=process.env.MONGO_LOCAL_URL;
+mongoose.connect(MONGO_LOCAL_URL,{
     useNewUrlParser: true,
     useUnifiedTopology: true,  
 })

@@ -1,4 +1,5 @@
 const mongoose=require('mongoose');
+const bcrypt=require('bcrypt');
 
 const staffSchema=mongoose.Schema({
     firstName:{
@@ -33,6 +34,34 @@ const staffSchema=mongoose.Schema({
         unique:true
     }
 })
+
+staffSchema.pre('save',async function(next){
+    const staff=this;
+    try{
+        if(!staff.isModified('password')){
+            next();
+        }else{
+            const salt=await bcrypt.genSalt(10);
+
+            const hashedPassword=await bcrypt.hash(staff.password,salt);
+            staff.password=hashedPassword;
+
+            next();
+        }
+    }catch(err){
+        next(err);
+    }
+})
+
+staffSchema.methods.isMatch=async (userPassword)=>{
+    try{
+        const isMatch= await bcrypt.compare(userPassword,this.password);
+
+        return isMatch;
+    }catch(err){
+        throw err;
+    }
+}
 
 const staffModel=mongoose.model('staff',staffSchema);
 

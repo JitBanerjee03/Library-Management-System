@@ -1,7 +1,7 @@
 const book=require('../models/book');
 const express=require('express');
 const router=express.Router();
-const {jwtTokenGeneration,jwtTokenValidation}=require('../auth');
+const {jwtTokenGeneration,jwtTokenValidation}=require('../jwtAuth');
 const staff=require('../models/staff');
 
 router.post('/addnewbooks',jwtTokenValidation,async(req,res)=>{  //endpoint to store record for a perticular book

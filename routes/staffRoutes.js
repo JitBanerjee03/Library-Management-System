@@ -1,7 +1,7 @@
 const staff=require('../models/staff');
 const express=require('express');
 const router=express.Router();
-const {jwtTokenGeneration,jwtTokenValidation}=require('../auth');
+const {jwtTokenGeneration,jwtTokenValidation}=require('../jwtAuth');
 
 router.post('/signup',async(req,res)=>{  //endpoint to store record for a perticular staff
     try{

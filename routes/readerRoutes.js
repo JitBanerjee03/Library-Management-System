@@ -1,21 +1,56 @@
 const express=require('express');
 const router=express.Router();
 const reader=require('../models/reader')
+const {jwtTokenGeneration,jwtTokenValidation}=require('../jwtAuth');
 
-router.post('/',async(req,res)=>{  //endpoint to store record for a perticular reader
+router.post('/signup',async(req,res)=>{  //endpoint to store record for a perticular reader
     try{
         const data=req.body;
         const readerData=new reader(data);
 
         const responseData=await readerData.save();
-        
-        res.status(200).json(responseData);
+
+        const payload={
+            userName:responseData.email,
+            firstName:responseData.firstName
+        }
+
+        const token=await jwtTokenGeneration(payload);
+        console.log(token);
+        res.status(200).json({token});
     }catch(err){
         res.status(500).json({error:"Data cannot be saved in the database"});
     }
 })
 
-router.put('/:id',async(req,res)=>{  //endpoint to update record for a particular reader
+router.get('/login',async(req,res)=>{  //endpoint to login record for a perticular reader and generating jwt token for that particular user
+    try{
+        const data=req.body;
+
+        const responseData=reader.findOne(data.username);
+        
+        if(!responseData){
+            console.log("user does not exist !");
+            res.status(401).json({message:"User does not exist with this email/username"});
+        }else{
+            const isValidUser=responseData.isMatch(data.password);
+
+            if(isValidUser){
+                const payload={
+                    userName:responseData.email,
+                    firstName:responseData.firstName
+                }
+                const token=await jwtTokenGeneration(payload);
+                console.log(token); 
+                res.status(200).json({token});
+            }
+        }
+    }catch(err){
+        res.status(500).json({error:"Data cannot be saved in the database"});
+    }
+})
+
+router.put('/:id',jwtTokenValidation,async(req,res)=>{  //endpoint to update record for a particular reader
     try{
         const id=req.params.id;
         
@@ -35,7 +70,7 @@ router.put('/:id',async(req,res)=>{  //endpoint to update record for a particula
     }
 })
 
-router.delete('/:id',async(req,res)=>{  //endpoint to delete record for a particular reader
+router.delete('/:id',jwtTokenValidation,async(req,res)=>{  //endpoint to delete record for a particular reader
     try{
         const id=req.params.id;
         
@@ -52,7 +87,7 @@ router.delete('/:id',async(req,res)=>{  //endpoint to delete record for a partic
     }
 })
 
-router.get('/:id',async(req,res)=>{  //endpoint to get record for partucular reader
+router.get('/:id',jwtTokenValidation,async(req,res)=>{  //endpoint to get record for partucular reader
     try{
         const id=req.params.id;
 

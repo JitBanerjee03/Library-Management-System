@@ -32,6 +32,11 @@ const staffSchema=mongoose.Schema({
         type:String,
         required:true,
         unique:true
+    },
+
+    isAdmin:{
+        type:Boolean,
+        default:false
     }
 })
 

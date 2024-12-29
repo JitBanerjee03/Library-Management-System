@@ -13,7 +13,7 @@ const passport=require('./auth');
 app.use(passport.initialize());
 
 app.get('/',passport.authenticate('local',{session:false}),(req,res)=>{
-    res.send("Well come to library management system");
+    res.send("Wellcome to library management system");
 })
 
 //requiring the staffRoute
@@ -31,8 +31,6 @@ app.use('/book',bookRoute);
 //requiring the reportRoute
 const reportRoute=require('./routes/reportRoute');
 app.use('/report',reportRoute);
-
-
 
 app.listen(3000,()=>{
     console.log("Server is live !");

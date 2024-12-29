@@ -1,35 +1,58 @@
 const staff=require('../models/staff');
 const express=require('express');
 const router=express.Router();
+const {jwtTokenGeneration,jwtTokenValidation}=require('../auth');
 
-router.post('/',async(req,res)=>{  //endpoint to store record for a perticular staff
+router.post('/signup',async(req,res)=>{  //endpoint to store record for a perticular staff
     try{
         const data=req.body;
         const staffData=new staff(data);
 
         const responseData=await staffData.save();
-        
-        res.status(200).json(responseData);
+
+        const payload={
+            userName:responseData.email,
+            firstName:responseData.firstName
+        }
+
+        const token=jwtTokenGeneration(payload);
+
+        res.status(200).json({"User:":responseData,"token:":token});
+
     }catch(err){
         res.status(500).json({error:"Data cannot be saved in the database"});
     }
 })
 
-router.get('/',async(req,res)=>{  //endpoint to get record for all staff
+router.get('/login',async(req,res)=>{  //endpoint to get record for all staff
     try{
-        const data=await staff.find();
+        const data=req.body;
 
-        if(!data){
-            res.status(200).json("Staff schema is empty");
+        const responseData=staff.findOne(data.email);
+
+        if(!responseData){
+            res.status(200).json("Invalid username !");
         }else{
-            res.status(200).json(data);
+            const isMatch=await responseData.isMatch(data.password);
+
+            if(isMatch){
+                const payLoad={
+                    userName:responseData.email,
+                    firstName:responseData.firstName
+                }
+
+                const token=jwtTokenGeneration(payLoad);
+                res.status(200).json({"User Data : ":responseData,"Paylaod : ":token});
+            }else{
+                res.status(401).json({message:"Invalid Password Unauthorised access!"});
+            }
         }
     }catch(err){
         res.status(500).json({error:"Internal error occured in the database"});
     }
 })
 
-router.put('/:id',async(req,res)=>{  //endpoint to update record for a particular staff
+router.put('/:id',jwtTokenValidation,async(req,res)=>{  //endpoint to update record for a particular staff
     try{
         const id=req.params.id;
         
@@ -49,7 +72,7 @@ router.put('/:id',async(req,res)=>{  //endpoint to update record for a particula
     }
 })
 
-router.delete('/:id',async(req,res)=>{  //endpoint to delete record for a particular staff
+router.delete('/:id',jwtTokenValidation,async(req,res)=>{  //endpoint to delete record for a particular staff
     try{
         const id=req.params.id;
         
@@ -66,7 +89,7 @@ router.delete('/:id',async(req,res)=>{  //endpoint to delete record for a partic
     }
 })
 
-router.get('/:id',async(req,res)=>{  //endpoint to get record for partucular staff
+router.get('/:id',jwtTokenValidation,async(req,res)=>{  //endpoint to get record for partucular staff
     try{
         const id=req.params.id;
 
